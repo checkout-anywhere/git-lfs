@@ -154,9 +154,9 @@ jobs:
     - run: (cd "$HOME/build-dockers" && ./build_dockers.bsh)
     - run: ./docker/run_dockers.bsh --prune
     # If this is a pre-release tag, don't upload anything to packagecloud.
-    - run: '[ -z "${GITHUB_REF%%refs/tags/*-pre*}" ] || ./script/packagecloud.rb'
-      env:
-        PACKAGECLOUD_TOKEN: ${{secrets.PACKAGECLOUD_TOKEN}}
+    # - run: '[ -z "${GITHUB_REF%%refs/tags/*-pre*}" ] || ./script/packagecloud.rb'
+    #   env:
+    #     PACKAGECLOUD_TOKEN: ${{secrets.PACKAGECLOUD_TOKEN}}
   # build-docker-cross:
   #   name: Build Cross Linux packages
   #   runs-on: ubuntu-latest
