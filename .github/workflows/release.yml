@@ -4,6 +4,29 @@ on:
     tags: '*'
 
 jobs:
+  build-linux:
+    name: Main Release Assets Linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ['1.20.x']
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - run: git fetch origin "+${GITHUB_REF}:${GITHUB_REF}"
+    - uses: ruby/setup-ruby@v1
+    - run: gem install asciidoctor
+    - uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go }}
+    - run: sudo apt-get update && sudo apt-get -y install gettext libarchive-tools
+      env:
+          DEBIAN_FRONTEND: noninteractive
+    - run: CGO_ENABLED=0 make release
+    - run: script/upload --skip-verify $(git describe)
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
   # build-windows:
   #   name: Build Windows Assets
   #   runs-on: windows-latest
@@ -94,15 +117,15 @@ jobs:
   #   - run: CERT_FILE="$HOME/cert.p12" make release-import-certificate
   #     env:
   #       CERT_PASS: ${{secrets.MACOS_CERT_PASS}}
-  #   - run: make release-darwin
-  #     env:
-  #       DARWIN_DEV_USER: ${{secrets.MACOS_DEV_USER}}
-  #       DARWIN_DEV_PASS: ${{secrets.MACOS_DEV_PASS}}
-  #       DARWIN_CERT_ID: ${{secrets.MACOS_CERT_ID}}
-  #   - uses: actions/upload-artifact@v3
-  #     with:
-  #       name: macos-assets
-  #       path: bin/releases
+    # - run: make release-darwin
+    #   env:
+    #     DARWIN_DEV_USER: ${{secrets.MACOS_DEV_USER}}
+    #     DARWIN_DEV_PASS: ${{secrets.MACOS_DEV_PASS}}
+    #     DARWIN_CERT_ID: ${{secrets.MACOS_CERT_ID}}
+    # - uses: actions/upload-artifact@v3
+    #   with:
+    #     name: macos-assets
+    #     path: bin/releases
   # build-main:
   #   name: Main Release Assets
   #   needs:
@@ -140,19 +163,19 @@ jobs:
   #   - run: script/upload --skip-verify $(git describe)
   #     env:
   #       GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-  build-docker:
-    name: Build Linux Packages
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - run: git fetch origin "+${GITHUB_REF}:${GITHUB_REF}"
-    - uses: ruby/setup-ruby@v1
-    - run: gem install packagecloud-ruby
-    - run: git clone https://github.com/git-lfs/build-dockers.git "$HOME/build-dockers"
-    - run: (cd "$HOME/build-dockers" && ./build_dockers.bsh)
-    - run: ./docker/run_dockers.bsh --prune
+  # build-docker:
+  #   name: Build Linux Packages
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #     with:
+  #       fetch-depth: 0
+  #   - run: git fetch origin "+${GITHUB_REF}:${GITHUB_REF}"
+  #   - uses: ruby/setup-ruby@v1
+  #   - run: gem install packagecloud-ruby
+  #   - run: git clone https://github.com/git-lfs/build-dockers.git "$HOME/build-dockers"
+  #   - run: (cd "$HOME/build-dockers" && ./build_dockers.bsh)
+  #   - run: ./docker/run_dockers.bsh --prune
     # If this is a pre-release tag, don't upload anything to packagecloud.
     # - run: '[ -z "${GITHUB_REF%%refs/tags/*-pre*}" ] || ./script/packagecloud.rb'
     #   env:
