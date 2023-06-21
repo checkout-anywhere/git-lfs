@@ -45,7 +45,7 @@ jobs:
     name: Build with specific Go
     strategy:
       matrix:
-        go: ['1.19.x']
+        go: ['1.20.x']
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
