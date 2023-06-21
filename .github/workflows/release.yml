@@ -43,7 +43,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: git-lfs-linux-amd64-${{ github.ref }}.tar.gz
+        asset_path: bin/releases/git-lfs-linux-amd64-${{github.ref_name}}.tar.gz
         asset_name: Linux AMD64
         asset_content_type: application/vnd.debian.binary-package
   # build-windows:
