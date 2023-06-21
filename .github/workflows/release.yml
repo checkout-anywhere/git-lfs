@@ -44,7 +44,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: bin/releases/git-lfs-linux-amd64-${{github.ref_name}}.tar.gz
-        asset_name: Linux AMD64
+        asset_name: git-lfs-linux-amd64-${{github.ref_name}}.tar.gz
         asset_content_type: application/vnd.debian.binary-package
   # build-windows:
   #   name: Build Windows Assets
