@@ -367,7 +367,7 @@ script/windows-installer/git-lfs-wizard-image.bmp
 # 	bin/releases/git-lfs-windows-arm64-$(VERSION).zip \
 # 	bin/releases/git-lfs-$(VERSION).tar.gz
 
-RELEASE_TARGETS = \\
+RELEASE_TARGETS = \
 	bin/releases/git-lfs-linux-amd64-$(VERSION).tar.gz
 
 # RELEASE_INCLUDES are the names of additional files that are added to each
