@@ -1,7 +1,6 @@
 package git_test // to avoid import cycles
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -10,6 +9,7 @@ import (
 
 	. "github.com/git-lfs/git-lfs/v3/git"
 	test "github.com/git-lfs/git-lfs/v3/t/cmd/util"
+	"github.com/git-lfs/git-lfs/v3/tools"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -345,6 +345,8 @@ func TestWorkTrees(t *testing.T) {
 		repo.Cleanup()
 	}()
 
+	repoDir, _ := tools.CanonicalizePath(repo.Path, true)
+
 	// test commits; we'll just modify the same file each time since we're
 	// only interested in branches & dates
 	inputs := []*test.CommitInput{
@@ -384,29 +386,38 @@ func TestWorkTrees(t *testing.T) {
 	test.RunGitCommand(t, true, "worktree", "add", "branch2_wt", "branch2")
 	test.RunGitCommand(t, true, "worktree", "add", "branch4_wt", "branch4")
 
-	refs, err := GetAllWorkTreeHEADs(filepath.Join(repo.Path, ".git"))
+	worktrees, err := GetAllWorkTrees(filepath.Join(repo.Path, ".git"))
 	assert.Equal(t, nil, err)
-	expectedRefs := []*Ref{
+	expectedWorktrees := []*Worktree{
 		{
-			Name: "master",
-			Type: RefTypeLocalBranch,
-			Sha:  outputs[0].Sha,
+			Ref: Ref{
+				Name: "master",
+				Type: RefTypeLocalBranch,
+				Sha:  outputs[0].Sha,
+			},
+			Dir: repoDir,
 		},
 		{
-			Name: "branch2",
-			Type: RefTypeLocalBranch,
-			Sha:  outputs[1].Sha,
+			Ref: Ref{
+				Name: "branch2",
+				Type: RefTypeLocalBranch,
+				Sha:  outputs[1].Sha,
+			},
+			Dir: filepath.Join(repoDir, "branch2_wt"),
 		},
 		{
-			Name: "branch4",
-			Type: RefTypeLocalBranch,
-			Sha:  outputs[3].Sha,
+			Ref: Ref{
+				Name: "branch4",
+				Type: RefTypeLocalBranch,
+				Sha:  outputs[3].Sha,
+			},
+			Dir: filepath.Join(repoDir, "branch4_wt"),
 		},
 	}
 	// Need to sort for consistent comparison
-	sort.Sort(test.RefsByName(expectedRefs))
-	sort.Sort(test.RefsByName(refs))
-	assert.Equal(t, expectedRefs, refs, "Refs should be correct")
+	sort.Sort(test.WorktreesByName(expectedWorktrees))
+	sort.Sort(test.WorktreesByName(worktrees))
+	assert.Equal(t, expectedWorktrees, worktrees, "Worktrees should be correct")
 }
 
 func TestVersionCompare(t *testing.T) {
@@ -518,7 +529,7 @@ func TestGetTrackedFiles(t *testing.T) {
 	assert.Equal(t, []string{"file1.txt", "file2.txt", "file3.txt", "file4.txt"}, tracked)
 
 	// Test includes staged but uncommitted files
-	ioutil.WriteFile("z_newfile.txt", []byte("Hello world"), 0644)
+	os.WriteFile("z_newfile.txt", []byte("Hello world"), 0644)
 	test.RunGitCommand(t, true, "add", "z_newfile.txt")
 	tracked, err = GetTrackedFiles("*.txt")
 	assert.Nil(t, err)
@@ -527,7 +538,7 @@ func TestGetTrackedFiles(t *testing.T) {
 	assert.Equal(t, fulllist, tracked)
 
 	// Test includes modified files (not staged)
-	ioutil.WriteFile("file1.txt", []byte("Modifications"), 0644)
+	os.WriteFile("file1.txt", []byte("Modifications"), 0644)
 	tracked, err = GetTrackedFiles("*.txt")
 	assert.Nil(t, err)
 	sort.Strings(tracked)

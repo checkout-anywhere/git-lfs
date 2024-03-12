@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ['1.21.x']
+        go: ['1.22.x']
     steps:
     - uses: actions/checkout@v4
       with:
@@ -19,7 +19,7 @@ jobs:
     - run: git fetch origin "+${GITHUB_REF}:${GITHUB_REF}"
     - uses: ruby/setup-ruby@v1
     - run: gem install asciidoctor
-    - uses: actions/setup-go@v4
+    - uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go }}
     - run: sudo apt-get update && sudo apt-get -y install gettext libarchive-tools
