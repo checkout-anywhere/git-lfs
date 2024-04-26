@@ -258,6 +258,23 @@ func DiffIndex(ref string, cached bool, refresh bool, workingDir string) (*bufio
 	return bufio.NewScanner(cmd.Stdout), nil
 }
 
+func DiffIndexWithPaths(ref string, cached bool, paths []string) (string, error) {
+	args := []string{"diff-index"}
+	if cached {
+		args = append(args, "--cached")
+	}
+	args = append(args, ref)
+	args = append(args, "--")
+	args = append(args, paths...)
+
+	output, err := gitSimple(args...)
+	if err != nil {
+		return "", err
+	}
+
+	return output, nil
+}
+
 func HashObject(r io.Reader) (string, error) {
 	cmd, err := gitNoLFS("hash-object", "--stdin")
 	if err != nil {
@@ -296,6 +313,18 @@ func LsTree(ref string) (*subprocess.BufferedCmd, error) {
 		"-z",          // null line termination
 		"--full-tree", // start at the root regardless of where we are in it
 		ref,
+	)
+}
+
+func LsFilesLFS() (*subprocess.BufferedCmd, error) {
+	// This requires Git 2.42.0 for `--format` with `objecttype`.
+	return gitNoLFSBuffered(
+		"ls-files",
+		"--cached",
+		"--full-name",
+		"-z",
+		"--format=%(objectmode) %(objecttype) %(objectname) %(objectsize)\t%(path)",
+		":(top,attr:filter=lfs)",
 	)
 }
 
