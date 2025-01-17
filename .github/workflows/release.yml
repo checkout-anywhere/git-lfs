@@ -167,6 +167,25 @@ jobs:
     #     name: macos-assets
     #     path: macos-assets
     - run: CGO_ENABLED=0 make release
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: bin/releases/git-lfs-linux-amd64-${{github.ref_name}}.tar.gz
+        asset_name: git-lfs-linux-amd64-${{github.ref_name}}.tar.gz
+        asset_content_type: application/vnd.debian.binary-package
     # - run: rm -f bin/releases/*windows* bin/releases/*darwin*
     # - run: 'find windows-assets -name "*windows*" -type f | xargs -I{} mv {} bin/releases'
     # - run: 'find macos-assets -name "*darwin*" -type f | xargs -I{} mv {} bin/releases'
