@@ -137,6 +137,8 @@ jobs:
   #       path: bin/releases
   build-main:
     name: Main Release Assets
+    permissions:
+      contents: write
     # needs:
     #   - build-windows
     #   - build-macos
