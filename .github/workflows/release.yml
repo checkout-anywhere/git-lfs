@@ -145,15 +145,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ['1.23.x']
+        go: ['1.25.x']
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         persist-credentials: false
-    - run: git fetch origin "+${GITHUB_REF}:${GITHUB_REF}"
-    - uses: ruby/setup-ruby@v1
-    - run: gem install asciidoctor
+        ref: ${{ github.ref }}
+    - run: sudo gem install asciidoctor
     - uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go }}
@@ -175,6 +174,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        name: windows-assets
+        path: windows-assets
+    - uses: actions/download-artifact@v4
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         draft: false
@@ -184,6 +186,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        name: macos-assets
+        path: macos-assets
+    - run: CGO_ENABLED=0 make release
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: bin/releases/git-lfs-linux-amd64-${{github.ref_name}}.tar.gz
         asset_name: git-lfs-linux-amd64-${{github.ref_name}}.tar.gz
